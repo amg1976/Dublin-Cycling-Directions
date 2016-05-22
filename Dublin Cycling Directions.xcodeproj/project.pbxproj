@@ -1,0 +1,293 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		720B9D981CF1F5CC00E50BDF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720B9D971CF1F5CC00E50BDF /* AppDelegate.swift */; };
+		720B9D9A1CF1F5CC00E50BDF /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720B9D991CF1F5CC00E50BDF /* ViewController.swift */; };
+		720B9D9D1CF1F5CC00E50BDF /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 720B9D9B1CF1F5CC00E50BDF /* Main.storyboard */; };
+		720B9D9F1CF1F5CC00E50BDF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 720B9D9E1CF1F5CC00E50BDF /* Assets.xcassets */; };
+		720B9DA21CF1F5CC00E50BDF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 720B9DA01CF1F5CC00E50BDF /* LaunchScreen.storyboard */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		720B9D941CF1F5CC00E50BDF /* Dublin Cycling Directions.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Dublin Cycling Directions.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		720B9D971CF1F5CC00E50BDF /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		720B9D991CF1F5CC00E50BDF /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		720B9D9C1CF1F5CC00E50BDF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		720B9D9E1CF1F5CC00E50BDF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		720B9DA11CF1F5CC00E50BDF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		720B9DA31CF1F5CC00E50BDF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		720B9D911CF1F5CC00E50BDF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		720B9D8B1CF1F5CC00E50BDF = {
+			isa = PBXGroup;
+			children = (
+				720B9D961CF1F5CC00E50BDF /* Dublin Cycling Directions */,
+				720B9D951CF1F5CC00E50BDF /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		720B9D951CF1F5CC00E50BDF /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				720B9D941CF1F5CC00E50BDF /* Dublin Cycling Directions.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		720B9D961CF1F5CC00E50BDF /* Dublin Cycling Directions */ = {
+			isa = PBXGroup;
+			children = (
+				720B9D971CF1F5CC00E50BDF /* AppDelegate.swift */,
+				720B9D991CF1F5CC00E50BDF /* ViewController.swift */,
+				720B9D9B1CF1F5CC00E50BDF /* Main.storyboard */,
+				720B9D9E1CF1F5CC00E50BDF /* Assets.xcassets */,
+				720B9DA01CF1F5CC00E50BDF /* LaunchScreen.storyboard */,
+				720B9DA31CF1F5CC00E50BDF /* Info.plist */,
+			);
+			path = "Dublin Cycling Directions";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		720B9D931CF1F5CC00E50BDF /* Dublin Cycling Directions */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 720B9DA61CF1F5CC00E50BDF /* Build configuration list for PBXNativeTarget "Dublin Cycling Directions" */;
+			buildPhases = (
+				720B9D901CF1F5CC00E50BDF /* Sources */,
+				720B9D911CF1F5CC00E50BDF /* Frameworks */,
+				720B9D921CF1F5CC00E50BDF /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Dublin Cycling Directions";
+			productName = "Dublin Cycling Directions";
+			productReference = 720B9D941CF1F5CC00E50BDF /* Dublin Cycling Directions.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		720B9D8C1CF1F5CC00E50BDF /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 0730;
+				LastUpgradeCheck = 0730;
+				ORGANIZATIONNAME = "Adriano Goncalves";
+				TargetAttributes = {
+					720B9D931CF1F5CC00E50BDF = {
+						CreatedOnToolsVersion = 7.3.1;
+					};
+				};
+			};
+			buildConfigurationList = 720B9D8F1CF1F5CC00E50BDF /* Build configuration list for PBXProject "Dublin Cycling Directions" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 720B9D8B1CF1F5CC00E50BDF;
+			productRefGroup = 720B9D951CF1F5CC00E50BDF /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				720B9D931CF1F5CC00E50BDF /* Dublin Cycling Directions */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		720B9D921CF1F5CC00E50BDF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				720B9DA21CF1F5CC00E50BDF /* LaunchScreen.storyboard in Resources */,
+				720B9D9F1CF1F5CC00E50BDF /* Assets.xcassets in Resources */,
+				720B9D9D1CF1F5CC00E50BDF /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		720B9D901CF1F5CC00E50BDF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				720B9D9A1CF1F5CC00E50BDF /* ViewController.swift in Sources */,
+				720B9D981CF1F5CC00E50BDF /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		720B9D9B1CF1F5CC00E50BDF /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				720B9D9C1CF1F5CC00E50BDF /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		720B9DA01CF1F5CC00E50BDF /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				720B9DA11CF1F5CC00E50BDF /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		720B9DA41CF1F5CC00E50BDF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		720B9DA51CF1F5CC00E50BDF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		720B9DA71CF1F5CC00E50BDF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = "Dublin Cycling Directions/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "AMG.Dublin-Cycling-Directions";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		720B9DA81CF1F5CC00E50BDF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = "Dublin Cycling Directions/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "AMG.Dublin-Cycling-Directions";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		720B9D8F1CF1F5CC00E50BDF /* Build configuration list for PBXProject "Dublin Cycling Directions" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				720B9DA41CF1F5CC00E50BDF /* Debug */,
+				720B9DA51CF1F5CC00E50BDF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		720B9DA61CF1F5CC00E50BDF /* Build configuration list for PBXNativeTarget "Dublin Cycling Directions" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				720B9DA71CF1F5CC00E50BDF /* Debug */,
+				720B9DA81CF1F5CC00E50BDF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 720B9D8C1CF1F5CC00E50BDF /* Project object */;
+}
