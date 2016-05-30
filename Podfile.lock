@@ -1,0 +1,16 @@
+PODS:
+  - GoogleMaps (1.13.2)
+  - Networking (1.1.0)
+  - RxSwift (2.5.0)
+
+DEPENDENCIES:
+  - GoogleMaps
+  - Networking
+  - RxSwift (~> 2.0)
+
+SPEC CHECKSUMS:
+  GoogleMaps: b20a103ff307f58392e603cf142e59d7e30374c1
+  Networking: 20a1714d673bc077aad2bd2d539007ea6087662f
+  RxSwift: 402b41a50e922a0368fc14cb3bc9f4427920e8ae
+
+COCOAPODS: 0.39.0
