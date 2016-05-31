@@ -15,6 +15,7 @@ class ViewController: UIViewController {
     private let disposeBag = DisposeBag()
     private var selectedMarkers: [GMSMarker] = [GMSMarker]()
     private var addedPolyline: GMSPolyline?
+    private lazy var mapView: GMSMapView? = { return self.view as? GMSMapView }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -27,18 +28,18 @@ class ViewController: UIViewController {
         mapView.delegate = self
         self.view = mapView
 
-        if let stations = try? StationService().getStations() {
+        StationService().getStations().asObservable().subscribeNext { [weak self] (stations) in
             for station in stations {
                 let marker = GMSMarker()
                 marker.position = station.location
                 marker.title = station.name
-                marker.map = mapView
+                marker.map = self?.mapView
             }
-        }
+        }.addDisposableTo(disposeBag)
         
-        LocationService.sharedInstance.lastLocation.asObservable().subscribeNext { (locationState) in
+        LocationService.sharedInstance.lastLocation.asObservable().subscribeNext { [weak self] (locationState) in
             print(locationState)
-            if let view = self.view as? GMSMapView {
+            if let view = self?.mapView {
                 switch locationState {
                 case .Available(let location):
                     view.animateToLocation(location.coordinate)

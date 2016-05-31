@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import RxSwift
 
 enum StationServiceError: ErrorType {
     case StaticStationDataNotFound
@@ -16,30 +17,41 @@ enum StationServiceError: ErrorType {
 
 struct StationService {
 
-    func getStations() throws -> [Station] {
+    func getStations() -> Observable<[Station]> {
 
-        guard let stationDataFilepath: String = NSBundle.mainBundle().pathForResource("Dublin", ofType: "json") else {
-            throw StationServiceError.StaticStationDataNotFound
+        func early(observer: AnyObserver<[Station]>, error: StationServiceError) -> Disposable {
+            observer.onError(error)
+            return AnonymousDisposable { }
         }
         
-        guard let stationData = NSData(contentsOfFile: stationDataFilepath) else {
-            throw StationServiceError.UnableToLoadStaticStationData
-        }
+        return Observable.create { observer in
         
-        guard let stationArray = try? NSJSONSerialization.JSONObjectWithData(stationData, options: NSJSONReadingOptions()) as? NSArray else {
-            throw StationServiceError.UnableToParseStationData
-        }
-        
-        var result = [Station]()
-        
-        if let array = stationArray as? [[String:AnyObject]] {
-            for dict in array {
-                let station = try Station(dict: dict)
-                result.append(station)
+            guard let stationDataFilepath: String = NSBundle.mainBundle().pathForResource("Dublin", ofType: "json") else {
+                return early(observer, error: StationServiceError.StaticStationDataNotFound)
             }
+            
+            guard let stationData = NSData(contentsOfFile: stationDataFilepath) else {
+                return early(observer, error: StationServiceError.UnableToLoadStaticStationData)
+            }
+            
+            guard let stationArray = try? NSJSONSerialization.JSONObjectWithData(stationData, options: NSJSONReadingOptions()) as? NSArray else {
+                return early(observer, error: StationServiceError.UnableToParseStationData)
+            }
+
+            var result = [Station]()
+            
+            if let array = stationArray as? [[String:AnyObject]] {
+                for dict in array {
+                    if let station = try? Station(dict: dict) {
+                        result.append(station)
+                    }
+                }
+            }
+            
+            observer.onNext(result)
+
+            return AnonymousDisposable { }
         }
-        
-        return result
         
     }
 
