@@ -17,5 +17,15 @@ struct Constants {
     }
     
     static let dublinCoords = CLLocation(latitude: 53.3498053, longitude: -6.260309699999993)
+    static let mapDefaultZoom: Float = 15
+    static let stationsMinimunDistance: Double = 500
 
+}
+
+extension CLLocationCoordinate2D {
+
+    func getCLLocation() -> CLLocation {
+        return CLLocation(latitude: latitude, longitude: longitude)
+    }
+    
 }
