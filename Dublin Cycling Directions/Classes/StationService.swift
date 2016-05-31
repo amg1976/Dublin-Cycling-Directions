@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import CoreLocation
 import RxSwift
 
 enum StationServiceError: ErrorType {
@@ -15,8 +16,10 @@ enum StationServiceError: ErrorType {
     case UnableToParseStationData
 }
 
-struct StationService {
-
+class StationService {
+    
+    private var stations: [Station] = []
+    
     func getStations() -> Observable<[Station]> {
 
         func early(observer: AnyObserver<[Station]>, error: StationServiceError) -> Disposable {
@@ -48,10 +51,26 @@ struct StationService {
                 }
             }
             
+            self.stations = result
+            
             observer.onNext(result)
 
             return AnonymousDisposable { }
         }
+        
+    }
+    
+    func getNearestStations(location: CLLocation, radius: CLLocationDistance) -> [Station] {
+    
+        var result = [Station]()
+        for station in stations {
+            let stationLocation = CLLocation(latitude: station.latitude, longitude: station.longitude)
+            let distance = stationLocation.distanceFromLocation(location)
+            if distance <= radius {
+                result.append(station)
+            }
+        }
+        return result
         
     }
 

@@ -16,6 +16,7 @@ class ViewController: UIViewController {
     private var selectedMarkers: [GMSMarker] = [GMSMarker]()
     private var addedPolyline: GMSPolyline?
     private lazy var mapView: GMSMapView? = { return self.view as? GMSMapView }()
+    private var stationService = StationService()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -27,25 +28,27 @@ class ViewController: UIViewController {
         mapView.myLocationEnabled = true
         mapView.delegate = self
         self.view = mapView
+        
+        Observable.combineLatest(LocationService.sharedInstance.lastLocation.asObservable(), stationService.getStations()) { [weak self] (location, stations) -> [Station] in
+            guard let strongSelf = self else { return [] }
+            
+            switch location {
+            case .Available(let location):
+                strongSelf.mapView?.animateToLocation(location.coordinate)
+                return strongSelf.stationService.getNearestStations(location, radius: 500)
+            default:
+                return []
+            }
 
-        StationService().getStations().asObservable().subscribeNext { [weak self] (stations) in
-            for station in stations {
+        }.subscribeNext { [weak self] (closestStations) in
+            
+            self?.mapView?.clear()
+            for station in closestStations {
                 let marker = GMSMarker()
+                marker.appearAnimation = kGMSMarkerAnimationPop
                 marker.position = station.location
                 marker.title = station.name
                 marker.map = self?.mapView
-            }
-        }.addDisposableTo(disposeBag)
-        
-        LocationService.sharedInstance.lastLocation.asObservable().subscribeNext { [weak self] (locationState) in
-            print(locationState)
-            if let view = self?.mapView {
-                switch locationState {
-                case .Available(let location):
-                    view.animateToLocation(location.coordinate)
-                default:
-                    break
-                }
             }
 
         }.addDisposableTo(disposeBag)
