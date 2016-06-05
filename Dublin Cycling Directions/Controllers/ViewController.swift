@@ -8,16 +8,19 @@
 
 import UIKit
 import GoogleMaps
-import RxSwift
+import ReactiveKit
 
 class ViewController: UIViewController {
 
     private let disposeBag = DisposeBag()
+    private lazy var mapView: GMSMapView? = { return self.view as? GMSMapView }()
+    private var directionService = DirectionsService()
+    private var stationService = StationService()
+    
     private var selectedMarkers: [GMSMarker] = [GMSMarker]()
     private var addedPolyline: GMSPolyline?
-    private lazy var mapView: GMSMapView? = { return self.view as? GMSMapView }()
-    private var stationService = StationService()
-    private var selectedPlace: Variable<GMSPlace?> = Variable(nil)
+
+    private var selectedPlace: Property<GMSPlace?> = Property<GMSPlace?>(nil)
     
     @IBAction func touchedSearchButton(sender: AnyObject) {
         let acController = GMSAutocompleteViewController()
@@ -30,22 +33,41 @@ class ViewController: UIViewController {
 
         setupMap()
         
-        let stationsObservable = stationService.getStations()
-        let selectedPlaceObservable = selectedPlace.asObservable()
+        guard let _ = mapView else { return }
         
-        Observable.combineLatest(selectedPlaceObservable, stationsObservable) { [weak self] (place, stations) -> (CLLocation?,[Station]) in
-            
-            guard let strongSelf = self, place = place else { return (nil, []) }
-            
-            return (place.coordinate.getCLLocation(), strongSelf.stationService.getNearestStations(place.coordinate.getCLLocation(), radius: Constants.stationsMinimunDistance))
+        selectedPlace.observeNext { [weak self] (place) in
 
-        }.subscribeNext { [weak self] (location, closestStations) in
+            guard let place = place, strongSelf = self else { return }
             
-            guard let location = location else { return }
+            let location = place.coordinate.getCLLocation()
+            strongSelf.stationService.getNearestStations(location, radius: Constants.stationsMinimunDistance).observeNext({ (stations) in
+                
+                strongSelf.showLocationAndNearestStations(location, stations: stations)
+                
+            }).disposeIn(strongSelf.disposeBag)
+                
             
-            self?.showLocationAndNearestStations(location, stations: closestStations)
+        }.disposeIn(disposeBag)
 
+        /*
+        Observable.combineLatest(currentLocationObservable, selectedMarkerObservable, resultSelector: { (currentLocation, selectedMarker) -> GMSPolyline? in
+            
+            guard let selectedMarker = selectedMarker else { return nil }
+            
+            switch currentLocation {
+            case .Available(let location):
+                DirectionsService().getDirections(location.coordinate, destination: selectedMarker.position) { (polyline, error) in
+
+                }
+                return nil
+            default:
+                return nil
+            }
+            
+        }).subscribeNext { (polyline) in
+            
         }.addDisposableTo(disposeBag)
+         */
 
     }
 
@@ -60,11 +82,13 @@ extension ViewController {
         
         let mapView = GMSMapView.mapWithFrame(CGRect.zero, camera: camera)
         mapView.myLocationEnabled = true
-        mapView.delegate = self
         mapView.settings.myLocationButton = true
         self.view = mapView
+
+        let locationStream = LocationService.sharedInstance.lastLocation
         
-        LocationService.sharedInstance.lastLocation.asObservable().subscribeNext { [weak self] (location) in
+        locationStream.observeNext({ [weak self] (location) in
+            
             print(location)
             switch location {
             case .Available(let location):
@@ -72,7 +96,36 @@ extension ViewController {
             default:
                 break
             }
-        }.addDisposableTo(disposeBag)
+        
+        }).disposeIn(disposeBag)
+        
+        let latestRoute = mapView.tappedMarker.combineLatestWith(locationStream).flatMapMerge { [weak self] (selectedMarker, currentLocation) -> Operation<GMSPolyline?, DirectionsServiceError<NSError>> in
+        
+            guard let strongSelf = self,
+                location = currentLocation.value(),
+                selectedMarker = selectedMarker
+                else {
+                    return Operation<GMSPolyline?, DirectionsServiceError<NSError>>.just(nil)
+            }
+            
+            print("tapped: \(selectedMarker), location: \(location)")
+            return strongSelf.directionService.getDirections(location.coordinate, destination: selectedMarker.position)
+
+        }
+        
+        latestRoute.zipPrevious().observeNext { [weak self] (previous, last) in
+            previous??.map = nil
+            guard let lastRoute = last,
+                mapView = self?.mapView else { return }
+
+            lastRoute.map = mapView
+            
+            if let path = lastRoute.path {
+                let cameraUpdate = GMSCameraUpdate.fitBounds(GMSCoordinateBounds(path: path))
+                mapView.moveCamera(cameraUpdate)
+            }
+            
+        }.disposeIn(disposeBag)
 
     }
     
@@ -104,6 +157,19 @@ extension ViewController {
     
 }
 
+extension GMSMapView {
+
+    var rDelegate: ProtocolProxy {
+        return protocolProxyFor(GMSMapViewDelegate.self, setter: NSSelectorFromString("setDelegate:"))
+    }
+    
+    var tappedMarker: Stream<GMSMarker?> {
+        return rDelegate.streamFor(#selector(GMSMapViewDelegate.mapView(_:didTapMarker:))) { (mapView: GMSMapView, marker: GMSMarker) in marker }
+    }
+    
+}
+
+/*
 extension ViewController: GMSMapViewDelegate {
 
     func mapView(mapView: GMSMapView, didTapMarker marker: GMSMarker) -> Bool {
@@ -134,6 +200,7 @@ extension ViewController: GMSMapViewDelegate {
     }
     
 }
+ */
 
 extension ViewController: GMSAutocompleteViewControllerDelegate {
 

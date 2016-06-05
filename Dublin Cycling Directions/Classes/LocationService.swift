@@ -8,7 +8,7 @@
 
 import Foundation
 import CoreLocation
-import RxSwift
+import ReactiveKit
 
 enum LocationServiceState<T> {
     case Unknown
@@ -16,13 +16,22 @@ enum LocationServiceState<T> {
     case Failed
     case Stopped
     case Available(T)
+    
+    func value() -> T? {
+        switch self {
+        case .Available(let location):
+            return location
+        default:
+            return nil
+        }
+    }
 }
 
 class LocationService: NSObject {
 
     private var manager: CLLocationManager
     
-    private (set) var lastLocation: Variable<LocationServiceState<CLLocation>> = Variable(.Unknown)
+    private (set) var lastLocation: Property<LocationServiceState<CLLocation>> = Property<LocationServiceState<CLLocation>>(.Unknown)
     
     static let sharedInstance = LocationService()
     
@@ -59,7 +68,7 @@ extension LocationService: CLLocationManagerDelegate {
             self.lastLocation.value = .Failed
             return
         }
-        
+
         self.lastLocation.value = .Available(lastLocation)
 
     }

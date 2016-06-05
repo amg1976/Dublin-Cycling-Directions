@@ -6,7 +6,7 @@ target 'Dublin Cycling Directions' do
 
 pod 'GoogleMaps'
 pod 'Networking'
-pod 'RxSwift', '~> 2.0'
-pod 'RxCocoa', '~> 2.0'
+pod 'ReactiveKit', '~> 2.0'
+pod 'ReactiveUIKit', '~> 2.0'
 
 end

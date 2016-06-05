@@ -10,31 +10,43 @@ import Foundation
 import Networking
 import CoreLocation
 import GoogleMaps
+import ReactiveKit
+
+enum DirectionsServiceError<E>: ErrorType {
+    case NetworkError(E)
+}
 
 struct DirectionsService {
 
     func getDirections(origin: CLLocationCoordinate2D,
-                       destination: CLLocationCoordinate2D,
-                       completion: (polyline: GMSPolyline?, error: NSError?)->()) {
+                       destination: CLLocationCoordinate2D) -> Operation<GMSPolyline?, DirectionsServiceError<NSError>> {
     
-        let getParams = String(format: "maps/api/directions/json?origin=%@&destination=%@&key=%@&mode=bicycling",
-                               origin.googleString(), destination.googleString(), Constants.ApiKeys.GoogleMaps)
+        return Operation<GMSPolyline?, DirectionsServiceError<NSError>> { operation in
         
-        let networking = Networking(baseURL: "https://maps.googleapis.com/")
-        networking.GET(getParams) { (JSON, error) in
-        
-            if let json = JSON as? [String:AnyObject],
-                routes = json["routes"] as? [[String:AnyObject]],
-                overviewPolyline = routes[0]["overview_polyline"] as? [String:AnyObject],
-                points = overviewPolyline["points"] as? String {
+            let getParams = String(format: "maps/api/directions/json?origin=%@&destination=%@&key=%@&mode=bicycling",
+                origin.googleString(), destination.googleString(), Constants.ApiKeys.GoogleMaps)
             
+            let networking = Networking(baseURL: "https://maps.googleapis.com/")
+            networking.GET(getParams) { (JSON, error) in
+                
+                guard let json = JSON as? [String:AnyObject],
+                    routes = json["routes"] as? [[String:AnyObject]],
+                    overviewPolyline = routes[0]["overview_polyline"] as? [String:AnyObject],
+                    points = overviewPolyline["points"] as? String
+                    else {
+                        operation.failure(.NetworkError(error!))
+                        return
+                }
+                
                 let path = GMSPath(fromEncodedPath: points)
                 let polyline = GMSPolyline(path: path)
-                completion(polyline: polyline, error: nil)
+                operation.next(polyline)
+                operation.completed()
+                    
                 
-            } else {
-                completion(polyline: nil, error: error)
             }
+            
+            return NotDisposable
             
         }
         

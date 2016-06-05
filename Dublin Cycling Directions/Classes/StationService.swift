@@ -8,7 +8,7 @@
 
 import Foundation
 import CoreLocation
-import RxSwift
+import ReactiveKit
 
 enum StationServiceError: ErrorType {
     case StaticStationDataNotFound
@@ -20,25 +20,26 @@ class StationService {
     
     private var stations: [Station] = []
     
-    func getStations() -> Observable<[Station]> {
+    func getStations() -> Operation<[Station], StationServiceError> {
+        
+        return Operation<[Station], StationServiceError> { operation in
 
-        func early(observer: AnyObserver<[Station]>, error: StationServiceError) -> Disposable {
-            observer.onError(error)
-            return AnonymousDisposable { }
-        }
-        
-        return Observable.create { observer in
-        
             guard let stationDataFilepath: String = NSBundle.mainBundle().pathForResource("Dublin", ofType: "json") else {
-                return early(observer, error: StationServiceError.StaticStationDataNotFound)
+                operation.failure(StationServiceError.StaticStationDataNotFound)
+                operation.completed()
+                return NotDisposable
             }
             
             guard let stationData = NSData(contentsOfFile: stationDataFilepath) else {
-                return early(observer, error: StationServiceError.UnableToLoadStaticStationData)
+                operation.failure(StationServiceError.UnableToLoadStaticStationData)
+                operation.completed()
+                return NotDisposable
             }
             
             guard let stationArray = try? NSJSONSerialization.JSONObjectWithData(stationData, options: NSJSONReadingOptions()) as? NSArray else {
-                return early(observer, error: StationServiceError.UnableToParseStationData)
+                operation.failure(StationServiceError.UnableToParseStationData)
+                operation.completed()
+                return NotDisposable
             }
 
             var result = [Station]()
@@ -51,26 +52,38 @@ class StationService {
                 }
             }
             
-            self.stations = result
+            operation.next(result)
+            operation.completed()
             
-            observer.onNext(result)
+            return NotDisposable
 
-            return AnonymousDisposable { }
         }
         
     }
-    
-    func getNearestStations(location: CLLocation, radius: CLLocationDistance) -> [Station] {
-    
-        var result = [Station]()
-        for station in stations {
-            let stationLocation = CLLocation(latitude: station.latitude, longitude: station.longitude)
-            let distance = stationLocation.distanceFromLocation(location)
-            if distance <= radius {
-                result.append(station)
+
+    func getNearestStations(location: CLLocation, radius: CLLocationDistance) -> Operation<[Station], StationServiceError> {
+        
+        return getStations().flatMapLatest({ (stations) -> Operation<[Station], StationServiceError> in
+
+            return Operation<[Station], StationServiceError> { operation in
+                
+                var result = [Station]()
+                for station in stations {
+                    let stationLocation = CLLocation(latitude: station.latitude, longitude: station.longitude)
+                    let distance = stationLocation.distanceFromLocation(location)
+                    if distance <= radius {
+                        result.append(station)
+                    }
+                }
+                
+                operation.next(result)
+                operation.completed()
+                
+                return NotDisposable
+                
             }
-        }
-        return result
+
+        })
         
     }
 
