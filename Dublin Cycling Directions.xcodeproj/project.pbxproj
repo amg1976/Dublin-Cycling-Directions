@@ -19,6 +19,7 @@
 		720B9DD51CF222E700E50BDF /* DirectionsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720B9DD41CF222E700E50BDF /* DirectionsService.swift */; };
 		720B9DE21CF3643E00E50BDF /* Dublin.json in Resources */ = {isa = PBXBuildFile; fileRef = 720B9DE11CF3643E00E50BDF /* Dublin.json */; };
 		724819C41CFCB5D60024096D /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 724819C31CFCB5D60024096D /* LocationService.swift */; };
+		729E440E1D04D64800E7D357 /* GoogleMaps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 729E440D1D04D64800E7D357 /* GoogleMaps.swift */; };
 		D8B644938D433225C3AA5EAD /* Pods_Dublin_Cycling_Directions.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 09379648787652CA27EC8CF2 /* Pods_Dublin_Cycling_Directions.framework */; };
 /* End PBXBuildFile section */
 
@@ -52,6 +53,7 @@
 		720B9DE11CF3643E00E50BDF /* Dublin.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = Dublin.json; sourceTree = "<group>"; };
 		724819C31CFCB5D60024096D /* LocationService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LocationService.swift; sourceTree = "<group>"; };
 		72902EEB1D045544005729CD /* DublinCyclingDirections-BridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "DublinCyclingDirections-BridgingHeader.h"; sourceTree = "<group>"; };
+		729E440D1D04D64800E7D357 /* GoogleMaps.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GoogleMaps.swift; sourceTree = "<group>"; };
 		8172075E6C3CAB5916F38035 /* Pods-Dublin Cycling Directions.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Dublin Cycling Directions.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Dublin Cycling Directions/Pods-Dublin Cycling Directions.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -146,6 +148,7 @@
 		720B9DB51CF1F82E00E50BDF /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				729E440C1D04D62B00E7D357 /* Extensions */,
 				720B9DBD1CF1FE4B00E50BDF /* Services */,
 				720B9DBA1CF1FD7300E50BDF /* Model */,
 				720B9DB61CF1F82E00E50BDF /* Utils.swift */,
@@ -178,6 +181,14 @@
 				720B9DCE1CF1FEBF00E50BDF /* StationServiceTests.swift */,
 			);
 			path = "Dublin Cycling DirectionsTests";
+			sourceTree = "<group>";
+		};
+		729E440C1D04D62B00E7D357 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				729E440D1D04D64800E7D357 /* GoogleMaps.swift */,
+			);
+			name = Extensions;
 			sourceTree = "<group>";
 		};
 		AB240D7822DF3800AF84EBF1 /* Frameworks */ = {
@@ -357,6 +368,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				724819C41CFCB5D60024096D /* LocationService.swift in Sources */,
+				729E440E1D04D64800E7D357 /* GoogleMaps.swift in Sources */,
 				720B9DB31CF1F80A00E50BDF /* ViewController.swift in Sources */,
 				720B9DD31CF218F200E50BDF /* Station.swift in Sources */,
 				720B9DB21CF1F80A00E50BDF /* AppDelegate.swift in Sources */,

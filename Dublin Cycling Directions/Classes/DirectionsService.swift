@@ -12,14 +12,16 @@ import CoreLocation
 import GoogleMaps
 import ReactiveKit
 
-enum DirectionsServiceError<E>: ErrorType {
+enum DirectionsServiceError<E: NSError>: ErrorType {
     case NetworkError(E)
 }
+
+typealias DirectionsServiceResult = Operation<GMSPolyline?, DirectionsServiceError<NSError>>
 
 struct DirectionsService {
 
     func getDirections(origin: CLLocationCoordinate2D,
-                       destination: CLLocationCoordinate2D) -> Operation<GMSPolyline?, DirectionsServiceError<NSError>> {
+                       destination: CLLocationCoordinate2D) -> DirectionsServiceResult {
     
         return Operation<GMSPolyline?, DirectionsServiceError<NSError>> { operation in
         
