@@ -20,6 +20,10 @@ extension GMSMapView {
         return rDelegate.streamFor(#selector(GMSMapViewDelegate.mapView(_:didTapMarker:))) { (mapView: GMSMapView, marker: GMSMarker) in marker }
     }
     
+    var tappedMyLocation: Stream<Bool> {
+        return rDelegate.streamFor(#selector(GMSMapViewDelegate.didTapMyLocationButtonForMapView(_:))) { (mapView: GMSMapView) in true }
+    }
+    
 }
 
 enum GMSAutocompleteViewControllerError<E: NSError>: ErrorType {

@@ -16,11 +16,13 @@ enum StationServiceError: ErrorType {
     case UnableToParseStationData
 }
 
+typealias StationServiceResult = Operation<[Station], StationServiceError>
+
 class StationService {
     
     private var stations: [Station] = []
     
-    func getStations() -> Operation<[Station], StationServiceError> {
+    func getStations() -> StationServiceResult {
         
         return Operation<[Station], StationServiceError> { operation in
 
@@ -61,9 +63,9 @@ class StationService {
         
     }
 
-    func getNearestStations(location: CLLocation, radius: CLLocationDistance) -> Operation<[Station], StationServiceError> {
+    func getNearestStations(location: CLLocation, radius: CLLocationDistance) -> StationServiceResult {
         
-        return getStations().flatMapLatest({ (stations) -> Operation<[Station], StationServiceError> in
+        return getStations().flatMapLatest({ (stations) -> StationServiceResult in
 
             return Operation<[Station], StationServiceError> { operation in
                 
