@@ -44,8 +44,9 @@ extension ViewController {
 
     private func setupMap() {
     
-        let camera = GMSCameraPosition.cameraWithLatitude(Constants.dublinCoords.coordinate.latitude,
-                                                          longitude: Constants.dublinCoords.coordinate.longitude, zoom: Constants.mapDefaultZoom)
+        let initialCoordinate = Constants.MapDefaults.dublinCoords.coordinate
+        let camera = GMSCameraPosition.cameraWithLatitude(initialCoordinate.latitude,
+                                                          longitude: initialCoordinate.longitude, zoom: Constants.MapDefaults.zoom)
         
         let mapView = GMSMapView.mapWithFrame(CGRect.zero, camera: camera)
         mapView.myLocationEnabled = true
@@ -54,6 +55,7 @@ extension ViewController {
 
         setupCurrentLocationUpdater(mapView)
         setupRouteUpdater(mapView)
+        setupMyLocationTappedHandler(mapView)
         
     }
     
@@ -76,59 +78,123 @@ extension ViewController {
     
     private func setupRouteUpdater(mapView: GMSMapView) {
     
-        let locationStream = LocationService.sharedInstance.lastLocation
-
-        let latestRoute = mapView.tappedMarker
-            .combineLatestWith(locationStream)
-            .flatMapMerge { [weak self] (selectedMarker, currentLocation) -> DirectionsServiceResult in
-            
-            guard let strongSelf = self,
-                location = currentLocation.value(),
-                selectedMarker = selectedMarker
-                else {
-                    return Operation<GMSPolyline?, DirectionsServiceError<NSError>>.just(nil)
-            }
-            
-            print("tapped: \(selectedMarker), location: \(location)")
-            return strongSelf.directionService.getDirections(location.coordinate, destination: selectedMarker.position)
-            
+        let sourceStation = mapView.tappedMarker
+            .filter { (marker) -> Bool in
+                if let userData = marker?.userData as? [String:Bool], isSourceStation = userData[Constants.Keys.isSourceStation] {
+                    return isSourceStation
+                }
+                return false
         }
         
-        latestRoute
+        let sourceRoute = sourceStation
+            .startWith(nil)
+            .combineLatestWith(LocationService.sharedInstance.lastLocation)
+            .flatMapMerge { (sourceStation, currentLocation) -> Stream<CLLocation> in
+                return Stream<CLLocation>() { stream in
+                    if let sourceStation = sourceStation {
+                        stream.next(sourceStation.position.getCLLocation())
+                    } else if let currentLocation = currentLocation.value() {
+                        stream.next(currentLocation)
+                    }
+                    stream.completed()
+                    return NotDisposable
+                }
+        }
+        
+        let destinationRoute = mapView.tappedMarker
+            .ignoreNil()
+            .filter { (marker) -> Bool in
+                if let userData = marker.userData as? [String:Bool], isSourceStation = userData[Constants.Keys.isSourceStation] {
+                    return !isSourceStation
+                }
+                return false
+            }
+            .flatMapLatest { (marker) -> Stream<CLLocation> in
+                return Stream<CLLocation>() { stream in
+                    stream.next(marker.position.getCLLocation())
+                    stream.completed()
+                    return NotDisposable
+                }
+        }
+        
+        sourceRoute
+            .combineLatestWith(destinationRoute)
+            .flatMapLatest({ (start, finish) -> DirectionsServiceResult in
+                return self.directionService.getDirections(start.coordinate, destination: finish.coordinate)
+            })
             .zipPrevious()
             .observeNext { [weak self] (previous, last) in
                 
-            previous??.map = nil
-            guard let lastRoute = last,
-                mapView = self?.mapView else { return }
-            
-            lastRoute.map = mapView
-            
-            if let path = lastRoute.path {
-                let cameraUpdate = GMSCameraUpdate.fitBounds(GMSCoordinateBounds(path: path))
-                mapView.moveCamera(cameraUpdate)
-            }
-            
-        }.disposeIn(disposeBag)
+                previous??.map = nil
+                guard let lastRoute = last,
+                    mapView = self?.mapView else { return }
+                
+                lastRoute.map = mapView
+                
+                if let path = lastRoute.path,
+                    navigationBarHeight = self?.topLayoutGuide.length {
+                    
+                    let cameraUpdate = GMSCameraUpdate.fitBounds(GMSCoordinateBounds(path: path),
+                        withEdgeInsets: UIEdgeInsets(top: navigationBarHeight+Constants.MapDefaults.routePadding,
+                            left: Constants.MapDefaults.routePadding,
+                            bottom: Constants.MapDefaults.routePadding,
+                            right: Constants.MapDefaults.routePadding))
+                    mapView.moveCamera(cameraUpdate)
+                    
+                }
+                
+            }.disposeIn(disposeBag)
 
     }
     
-    private func showLocationAndNearestStations(mapView: GMSMapView, location: CLLocation, stations: [Station]) {
+    private func setupMyLocationTappedHandler(mapView: GMSMapView) {
+
+        mapView.tappedMyLocation
+            .flatMapMerge({ [weak self] (_) -> StationServiceResult in
+                
+                guard let strongSelf = self,
+                    myLocation = mapView.myLocation else {
+                        return StationServiceResult.just([])
+                }
+                
+                return strongSelf.stationService.getNearestStations(myLocation, radius: Constants.MapDefaults.stationsMinimunDistance)
+                
+            })
+            .observeNext { [weak self] (stations) in
+                
+                mapView.clear()
+                
+                guard let myLocation = mapView.myLocation else { return }
+                
+                self?.showLocationAndNearestStations(mapView, location: myLocation, isMyLocation: true, stations: stations)
+                
+            }.disposeIn(disposeBag)
+
+    }
+    
+    private func showLocationAndNearestStations(mapView: GMSMapView, location: CLLocation, isMyLocation: Bool = false, stations: [Station]) {
 
         mapView.clear()
 
-        let camera = GMSCameraPosition.cameraWithTarget(location.coordinate, zoom: Constants.mapDefaultZoom)
+        let camera = GMSCameraPosition.cameraWithTarget(location.coordinate, zoom: Constants.MapDefaults.zoom)
         mapView.camera = camera
         
-        let marker = GMSMarker(position: location.coordinate)
-        marker.icon = GMSMarker.markerImageWithColor(UIColor.blueColor())
-        marker.map = mapView
+        var markerColor = UIColor.redColor()
+        if !isMyLocation {
+            let marker = GMSMarker(position: location.coordinate)
+            marker.icon = GMSMarker.markerImageWithColor(UIColor.blueColor())
+            marker.map = mapView
+        } else {
+            markerColor = UIColor.greenColor()
+        }
 
         for station in stations {
             let marker = GMSMarker()
+            marker.icon = GMSMarker.markerImageWithColor(markerColor)
             marker.appearAnimation = kGMSMarkerAnimationPop
             marker.position = station.location
             marker.title = station.name
+            marker.userData = [ Constants.Keys.isSourceStation:isMyLocation ]
             marker.map = mapView
         }
 
@@ -149,7 +215,7 @@ extension ViewController {
             guard let strongSelf = self else { return }
             
             let location = place.coordinate.getCLLocation()
-            strongSelf.stationService.getNearestStations(location, radius: Constants.stationsMinimunDistance).observeNext({ (stations) in
+            strongSelf.stationService.getNearestStations(location, radius: Constants.MapDefaults.stationsMinimunDistance).observeNext({ (stations) in
                 
                 strongSelf.showLocationAndNearestStations(mapView, location: location, stations: stations)
                 
