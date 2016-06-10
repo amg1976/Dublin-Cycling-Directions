@@ -23,6 +23,14 @@ class ViewController: UIViewController {
         return controller
     }()
     
+    @IBAction func touchedDeleteButton(sender: AnyObject) {
+        mapView?.clear()
+        
+        if let mapView = mapView {
+            mapView.moveCamera(centerCameraOnMyLocation(mapView))
+        }
+    }
+    
     @IBAction func touchedSearchButton(sender: AnyObject) {
         presentViewController(searchController, animated: true, completion: nil)
     }
@@ -100,7 +108,7 @@ extension ViewController {
                     return NotDisposable
                 }
         }
-        
+
         let destinationRoute = mapView.tappedMarker
             .ignoreNil()
             .filter { (marker) -> Bool in
@@ -123,27 +131,41 @@ extension ViewController {
                 return self.directionService.getDirections(start.coordinate, destination: finish.coordinate)
             })
             .zipPrevious()
-            .observeNext { [weak self] (previous, last) in
+            .toStream(justLogError: true)
+            .combineLatestWith(sourceRoute)
+            .combineLatestWith(destinationRoute)
+            .observeNext({ [weak self] (routesAndStartLocation, finishLocation) in
+
+                guard let currentRoute = routesAndStartLocation.0.1  else { return }
                 
-                previous??.map = nil
-                guard let lastRoute = last,
-                    mapView = self?.mapView else { return }
+                let previousRoute = routesAndStartLocation.0.0
+                let startLocation = routesAndStartLocation.1
                 
-                lastRoute.map = mapView
+                mapView.clear()
+                previousRoute??.map = nil
                 
-                if let path = lastRoute.path,
-                    navigationBarHeight = self?.topLayoutGuide.length {
+                currentRoute.map = mapView
+                
+                if let path = currentRoute.path,
+                    cameraUpdate = self?.centerCameraOnPath(mapView, path: path) {
                     
-                    let cameraUpdate = GMSCameraUpdate.fitBounds(GMSCoordinateBounds(path: path),
-                        withEdgeInsets: UIEdgeInsets(top: navigationBarHeight+Constants.MapDefaults.routePadding,
-                            left: Constants.MapDefaults.routePadding,
-                            bottom: Constants.MapDefaults.routePadding,
-                            right: Constants.MapDefaults.routePadding))
                     mapView.moveCamera(cameraUpdate)
                     
                 }
                 
-            }.disposeIn(disposeBag)
+                let startMarker = GMSMarker()
+                startMarker.icon = GMSMarker.markerImageWithColor(UIColor.greenColor())
+                startMarker.appearAnimation = kGMSMarkerAnimationPop
+                startMarker.position = startLocation.coordinate
+                startMarker.map = mapView
+
+                let endMarker = GMSMarker()
+                endMarker.icon = GMSMarker.markerImageWithColor(UIColor.redColor())
+                endMarker.appearAnimation = kGMSMarkerAnimationPop
+                endMarker.position = finishLocation.coordinate
+                endMarker.map = mapView
+
+            }).disposeIn(disposeBag)
 
     }
     
@@ -164,9 +186,11 @@ extension ViewController {
                 
                 mapView.clear()
                 
-                guard let myLocation = mapView.myLocation else { return }
+                guard let strongSelf = self,
+                    myLocation = mapView.myLocation else { return }
                 
                 self?.showLocationAndNearestStations(mapView, location: myLocation, isMyLocation: true, stations: stations)
+                
                 
             }.disposeIn(disposeBag)
 
@@ -225,4 +249,24 @@ extension ViewController {
         
     }
     
+    private func centerCameraOnMyLocation(mapView: GMSMapView) -> GMSCameraUpdate {
+        if let location = mapView.myLocation {
+            return self.centerCamera(mapView, onLocation: location)
+        }
+        return self.centerCamera(mapView, onLocation: Constants.MapDefaults.dublinCoords)
+    }
+
+    private func centerCamera(mapView: GMSMapView, onLocation location: CLLocation) -> GMSCameraUpdate {
+        return GMSCameraUpdate.setTarget(location.coordinate, zoom: Constants.MapDefaults.zoom)
+    }
+    
+    private func centerCameraOnPath(mapView: GMSMapView, path: GMSPath) -> GMSCameraUpdate {
+        let navigationBarHeight = topLayoutGuide.length ?? 0
+        return GMSCameraUpdate.fitBounds(GMSCoordinateBounds(path: path),
+                                         withEdgeInsets: UIEdgeInsets(top: navigationBarHeight+Constants.MapDefaults.routePadding,
+                                            left: Constants.MapDefaults.routePadding,
+                                            bottom: Constants.MapDefaults.routePadding,
+                                            right: Constants.MapDefaults.routePadding))
+    }
+
 }
