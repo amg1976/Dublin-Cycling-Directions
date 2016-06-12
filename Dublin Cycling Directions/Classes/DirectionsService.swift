@@ -16,14 +16,20 @@ enum DirectionsServiceError<E: NSError>: ErrorType {
     case NetworkError(E)
 }
 
-typealias DirectionsServiceResult = Operation<GMSPolyline?, DirectionsServiceError<NSError>>
+struct Route {
+    var start: CLLocationCoordinate2D
+    var finish: CLLocationCoordinate2D
+    var polyline: GMSPolyline
+}
+
+typealias DirectionsServiceResult = Operation<Route?, DirectionsServiceError<NSError>>
 
 struct DirectionsService {
 
     func getDirections(origin: CLLocationCoordinate2D,
                        destination: CLLocationCoordinate2D) -> DirectionsServiceResult {
     
-        return Operation<GMSPolyline?, DirectionsServiceError<NSError>> { operation in
+        return Operation<Route?, DirectionsServiceError<NSError>> { operation in
         
             let getParams = String(format: "maps/api/directions/json?origin=%@&destination=%@&key=%@&mode=bicycling",
                 origin.googleString(), destination.googleString(), Constants.ApiKeys.GoogleMaps)
@@ -42,7 +48,8 @@ struct DirectionsService {
                 
                 let path = GMSPath(fromEncodedPath: points)
                 let polyline = GMSPolyline(path: path)
-                operation.next(polyline)
+                let route = Route(start: origin, finish: destination, polyline: polyline)
+                operation.next(route)
                 operation.completed()
                     
                 

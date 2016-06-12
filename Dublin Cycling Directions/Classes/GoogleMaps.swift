@@ -25,6 +25,20 @@ extension GMSMapView {
         return rDelegate.streamFor(#selector(GMSMapViewDelegate.didTapMyLocationButtonForMapView(_:))) { (mapView: GMSMapView) in true }
     }
     
+    var tappedSourceStations: Stream<GMSMarker?> {
+        return tappedMarker.filter {
+            guard let marker = $0 else { return false }
+            return marker.isSourceStation
+        }
+    }
+
+    var tappedDestinationStations: Stream<GMSMarker?> {
+        return tappedMarker.filter {
+            guard let marker = $0 else { return false }
+            return !marker.isSourceStation
+        }
+    }
+
 }
 
 enum GMSAutocompleteViewControllerError<E: NSError>: ErrorType {
@@ -85,4 +99,30 @@ extension GMSMarker {
             }
         }
     }
+    
+    static func newMarker(coordinate: CLLocationCoordinate2D) -> GMSMarker {
+        let startMarker = GMSMarker()
+        startMarker.appearAnimation = kGMSMarkerAnimationPop
+        startMarker.position = coordinate
+        return startMarker
+    }
+    
+    static func startMarker(coordinate: CLLocationCoordinate2D) -> GMSMarker {
+        let startMarker = GMSMarker.newMarker(coordinate)
+        startMarker.icon = GMSMarker.markerImageWithColor(UIColor.greenColor())
+        return startMarker
+    }
+
+    static func endMarker(coordinate: CLLocationCoordinate2D) -> GMSMarker {
+        let endMarker = GMSMarker.newMarker(coordinate)
+        endMarker.icon = GMSMarker.markerImageWithColor(UIColor.redColor())
+        return endMarker
+    }
+    
+    static func placeMarker(coordinate: CLLocationCoordinate2D) -> GMSMarker {
+        let placeMarker = GMSMarker.newMarker(coordinate)
+        placeMarker.icon = GMSMarker.markerImageWithColor(UIColor.blueColor())
+        return placeMarker
+    }
+
 }
