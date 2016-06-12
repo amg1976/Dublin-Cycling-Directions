@@ -17,7 +17,8 @@ extension GMSMapView {
     }
     
     var tappedMarker: Stream<GMSMarker?> {
-        return rDelegate.streamFor(#selector(GMSMapViewDelegate.mapView(_:didTapMarker:))) { (mapView: GMSMapView, marker: GMSMarker) in marker }
+        return rDelegate.streamFor(#selector(GMSMapViewDelegate.mapView(_:didTapMarker:)),
+                                   map: { (mapView: GMSMapView, marker: GMSMarker) in marker })
     }
     
     var tappedMyLocation: Stream<Bool> {
@@ -61,4 +62,27 @@ extension GMSAutocompleteViewController {
         }
     }
     
+}
+
+extension GMSMarker {
+
+    var isSourceStation: Bool {
+        get {
+            if let userData = userData as? [String:AnyObject],
+                keyValue = userData[Constants.Keys.isSourceStation] as? Bool
+                where userData.keys.contains(Constants.Keys.isSourceStation) && userData[Constants.Keys.isSourceStation] is Bool {
+                return keyValue
+            }
+            return false
+        }
+        set {
+            if let userData = userData as? [String:AnyObject] {
+                var data = userData
+                data[Constants.Keys.isSourceStation] = newValue
+                self.userData = data
+            } else {
+                self.userData = [Constants.Keys.isSourceStation:newValue]
+            }
+        }
+    }
 }

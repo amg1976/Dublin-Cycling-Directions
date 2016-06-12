@@ -11,12 +11,12 @@ import GoogleMaps
 import ReactiveKit
 
 class ViewController: UIViewController {
-
+    
     private let disposeBag = DisposeBag()
     
     private let directionService = DirectionsService()
     private let stationService = StationService()
-
+    
     private lazy var mapView: GMSMapView? = { return self.view as? GMSMapView }()
     private let searchController: GMSAutocompleteViewController = {
         let controller = GMSAutocompleteViewController()
@@ -45,13 +45,13 @@ class ViewController: UIViewController {
         setupSearchController(mapView)
         
     }
-
+    
 }
 
 extension ViewController {
-
-    private func setupMap() {
     
+    private func setupMap() {
+        
         let initialCoordinate = Constants.MapDefaults.dublinCoords.coordinate
         let camera = GMSCameraPosition.cameraWithLatitude(initialCoordinate.latitude,
                                                           longitude: initialCoordinate.longitude, zoom: Constants.MapDefaults.zoom)
@@ -60,7 +60,7 @@ extension ViewController {
         mapView.myLocationEnabled = true
         mapView.settings.myLocationButton = true
         self.view = mapView
-
+        
         setupCurrentLocationUpdater(mapView)
         setupRouteUpdater(mapView)
         setupMyLocationTappedHandler(mapView)
@@ -71,27 +71,24 @@ extension ViewController {
         
         LocationService.sharedInstance.lastLocation
             .observeNext({ (location) in
-            
-            print(location)
-            switch location {
-            case .Available(let location):
-                mapView.animateToLocation(location.coordinate)
-            default:
-                break
-            }
-            
-        }).disposeIn(disposeBag)
-
+                
+                print(location)
+                switch location {
+                case .Available(let location):
+                    mapView.animateToLocation(location.coordinate)
+                default:
+                    break
+                }
+                
+            }).disposeIn(disposeBag)
+        
     }
     
     private func setupRouteUpdater(mapView: GMSMapView) {
-    
+        
         let sourceStation = mapView.tappedMarker
-            .filter { (marker) -> Bool in
-                if let userData = marker?.userData as? [String:Bool], isSourceStation = userData[Constants.Keys.isSourceStation] {
-                    return isSourceStation
-                }
-                return false
+            .filter { guard let marker = $0 else { return false }
+                return marker.isSourceStation
         }
         
         let sourceRoute = sourceStation
@@ -108,15 +105,10 @@ extension ViewController {
                     return NotDisposable
                 }
         }
-
+        
         let destinationRoute = mapView.tappedMarker
             .ignoreNil()
-            .filter { (marker) -> Bool in
-                if let userData = marker.userData as? [String:Bool], isSourceStation = userData[Constants.Keys.isSourceStation] {
-                    return !isSourceStation
-                }
-                return false
-            }
+            .filter { return !$0.isSourceStation }
             .flatMapLatest { (marker) -> Stream<CLLocation> in
                 return Stream<CLLocation>() { stream in
                     stream.next(marker.position.getCLLocation())
@@ -135,7 +127,7 @@ extension ViewController {
             .combineLatestWith(sourceRoute)
             .combineLatestWith(destinationRoute)
             .observeNext({ [weak self] (routesAndStartLocation, finishLocation) in
-
+                
                 guard let currentRoute = routesAndStartLocation.0.1  else { return }
                 
                 let previousRoute = routesAndStartLocation.0.0
@@ -158,19 +150,19 @@ extension ViewController {
                 startMarker.appearAnimation = kGMSMarkerAnimationPop
                 startMarker.position = startLocation.coordinate
                 startMarker.map = mapView
-
+                
                 let endMarker = GMSMarker()
                 endMarker.icon = GMSMarker.markerImageWithColor(UIColor.redColor())
                 endMarker.appearAnimation = kGMSMarkerAnimationPop
                 endMarker.position = finishLocation.coordinate
                 endMarker.map = mapView
-
-            }).disposeIn(disposeBag)
-
+                
+                }).disposeIn(disposeBag)
+        
     }
     
     private func setupMyLocationTappedHandler(mapView: GMSMapView) {
-
+        
         mapView.tappedMyLocation
             .flatMapMerge({ [weak self] (_) -> StationServiceResult in
                 
@@ -181,25 +173,36 @@ extension ViewController {
                 
                 return strongSelf.stationService.getNearestStations(myLocation, radius: Constants.MapDefaults.stationsMinimunDistance)
                 
-            })
-            .observeNext { [weak self] (stations) in
+                })
+            .combineLatestWith(mapView.tappedMarker
+                .filter { guard let marker = $0 else { return false }
+                    return !marker.isSourceStation
+                }
+                .toOperation()
+                .startWith(nil)
+            )
+            .observeNext({ [weak self] (stations, lastTappedMarker) in
+                
+                guard let myLocation = mapView.myLocation else { return }
+                
+                var displayStations = stations
+                if let tapped = lastTappedMarker {
+                    displayStations = stations.filter({ $0.location.googleString() != tapped.position.googleString() })
+                }
                 
                 mapView.clear()
                 
-                guard let strongSelf = self,
-                    myLocation = mapView.myLocation else { return }
+                self?.showLocationAndNearestStations(mapView, location: myLocation, isMyLocation: true, stations: displayStations)
                 
-                self?.showLocationAndNearestStations(mapView, location: myLocation, isMyLocation: true, stations: stations)
-                
-                
-            }.disposeIn(disposeBag)
-
+                })
+            .disposeIn(disposeBag)
+        
     }
     
     private func showLocationAndNearestStations(mapView: GMSMapView, location: CLLocation, isMyLocation: Bool = false, stations: [Station]) {
-
+        
         mapView.clear()
-
+        
         let camera = GMSCameraPosition.cameraWithTarget(location.coordinate, zoom: Constants.MapDefaults.zoom)
         mapView.camera = camera
         
@@ -211,41 +214,53 @@ extension ViewController {
         } else {
             markerColor = UIColor.greenColor()
         }
-
+        
         for station in stations {
             let marker = GMSMarker()
             marker.icon = GMSMarker.markerImageWithColor(markerColor)
             marker.appearAnimation = kGMSMarkerAnimationPop
             marker.position = station.location
             marker.title = station.name
-            marker.userData = [ Constants.Keys.isSourceStation:isMyLocation ]
+            marker.isSourceStation = isMyLocation
             marker.map = mapView
         }
-
+        
     }
     
     private func setupSearchController(mapView: GMSMapView) {
-    
+        
         searchController.cancelled.observeNext { [weak self] (_) in
             
             self?.dismissViewControllerAnimated(true, completion: nil)
             
-        }.disposeIn(disposeBag)
+            }.disposeIn(disposeBag)
         
-        searchController.selectedPlace.observeNext { [weak self] (place) in
-            
-            self?.dismissViewControllerAnimated(true, completion: nil)
-            
-            guard let strongSelf = self else { return }
-            
-            let location = place.coordinate.getCLLocation()
-            strongSelf.stationService.getNearestStations(location, radius: Constants.MapDefaults.stationsMinimunDistance).observeNext({ (stations) in
+        searchController.selectedPlace
+            .combineLatestWith(mapView.tappedMarker
+                .filter { guard let marker = $0 else { return false }
+                    return marker.isSourceStation
+                }
+                .startWith(nil)
+            )
+            .observeNext { [weak self] (place, lastTappedMarker) in
                 
-                strongSelf.showLocationAndNearestStations(mapView, location: location, stations: stations)
+                self?.dismissViewControllerAnimated(true, completion: nil)
                 
-            }).disposeIn(strongSelf.disposeBag)
+                guard let strongSelf = self else { return }
+                
+                let location = place.coordinate.getCLLocation()
+                strongSelf.stationService.getNearestStations(location, radius: Constants.MapDefaults.stationsMinimunDistance).observeNext({ (stations) in
+                    
+                    var displayStations = stations
+                    if let tapped = lastTappedMarker {
+                        displayStations = stations.filter({ $0.location.googleString() != tapped.position.googleString() })
+                    }
 
-        }.disposeIn(disposeBag)
+                    strongSelf.showLocationAndNearestStations(mapView, location: location, stations: displayStations)
+                    
+                }).disposeIn(strongSelf.disposeBag)
+                
+            }.disposeIn(disposeBag)
         
     }
     
@@ -255,7 +270,7 @@ extension ViewController {
         }
         return self.centerCamera(mapView, onLocation: Constants.MapDefaults.dublinCoords)
     }
-
+    
     private func centerCamera(mapView: GMSMapView, onLocation location: CLLocation) -> GMSCameraUpdate {
         return GMSCameraUpdate.setTarget(location.coordinate, zoom: Constants.MapDefaults.zoom)
     }
@@ -268,5 +283,5 @@ extension ViewController {
                                             bottom: Constants.MapDefaults.routePadding,
                                             right: Constants.MapDefaults.routePadding))
     }
-
+    
 }
